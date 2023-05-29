@@ -5,10 +5,15 @@ import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
+import com.facebook.react.bridge.JavaScriptExecutorFactory;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
+import com.quickjs.QuickJSExecutorFactory;
+
 import java.util.List;
+
+import androidx.annotation.Nullable;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -41,6 +46,12 @@ public class MainApplication extends Application implements ReactApplication {
         @Override
         protected Boolean isHermesEnabled() {
           return BuildConfig.IS_HERMES_ENABLED;
+        }
+
+        @Nullable
+        @Override
+        protected JavaScriptExecutorFactory getJavaScriptExecutorFactory() {
+          return new QuickJSExecutorFactory();
         }
       };
 

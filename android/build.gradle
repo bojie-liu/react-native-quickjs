@@ -1,3 +1,8 @@
+import groovy.json.JsonSlurper
+import org.apache.tools.ant.taskdefs.condition.Os
+
+def appProject = rootProject.allprojects.find { it.plugins.hasPlugin('com.android.application') }
+
 buildscript {
   repositories {
     google()
@@ -13,10 +18,33 @@ def isNewArchitectureEnabled() {
   return rootProject.hasProperty("newArchEnabled") && rootProject.getProperty("newArchEnabled") == "true"
 }
 
+def getNodeExecutable() {
+  return rootProject.getProperties().get("nodeExecutablePath") ?: "node"
+}
+
+def findNodePackageDir(String packageName, boolean absolute = true) {
+  def nodeCommand = [getNodeExecutable(), "--print", "require.resolve('${packageName}/package.json')"]
+  def proc = nodeCommand.execute(null, rootDir)
+  def error = proc.err.text
+  if (error) {
+    throw new GradleException("findNodePackageDir() execution failed - nodeCommand[${nodeCommand.join(' ')}]\n" + error)
+  }
+  def dir = new File(proc.text.trim()).getParentFile()
+  return absolute ? dir.getAbsoluteFile() : dir
+}
+
 apply plugin: "com.android.library"
 
+def reactNativeDir = findNodePackageDir("react-native")
+def reactNativeManifest = file("${reactNativeDir}/package.json")
+def reactNativeManifestAsJson = new JsonSlurper().parseText(reactNativeManifest.text)
+def reactNativeVersion = reactNativeManifestAsJson.version as String
+def (major, minor, patch) = reactNativeVersion.tokenize('.')
+def rnMinorVersion = Integer.parseInt(minor)
 
-def appProject = rootProject.allprojects.find { it.plugins.hasPlugin('com.android.application') }
+if (appProject?.ext?.react?.enableHermes) {
+  throw new GradleException("Please disable Hermes because Hermes will transform the JavaScript bundle as bytecode bundle.\n")
+}
 
 if (isNewArchitectureEnabled()) {
   apply plugin: "com.facebook.react"
@@ -28,6 +56,14 @@ def getExtOrDefault(name) {
 
 def getExtOrIntegerDefault(name) {
   return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties["Quickjs_" + name]).toInteger()
+}
+
+def toPlatformFileString(File path) {
+  def result = path.toString()
+  if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    result = result.replace(File.separatorChar, '/' as char)
+  }
+  return result
 }
 
 android {
@@ -42,6 +78,9 @@ android {
       cmake {
         cppFlags "-O2 -frtti -fexceptions -Wall -fstack-protector-all"
         abiFilters "x86", "x86_64", "armeabi-v7a", "arm64-v8a"
+        arguments "-DANDROID_STL=c++_shared",
+            "-DREACT_NATIVE_DIR=${toPlatformFileString(reactNativeDir)}",
+            "-DREACT_NATIVE_TARGET_VERSION=${rnMinorVersion}"
       }
     }
   }
@@ -52,7 +91,13 @@ android {
   }
   buildTypes {
     release {
-      minifyEnabled false
+      minifyEnabled true
+      proguardFiles getDefaultProguardFile('proguard-android.txt')
+      externalNativeBuild {
+        cmake {
+          cppFlags "-O2 -frtti -fexceptions -Wall"
+        }
+      }
     }
   }
 
@@ -60,11 +105,37 @@ android {
     disable "GradleCompatible"
   }
 
+  packagingOptions {
+    // Uncomment to keep debug symbols
+    // doNotStrip "**/*.so"
+
+    excludes += [
+        "**/libc++_shared.so",
+        "**/libfbjni.so",
+        "**/libjsi.so",
+        "**/libfolly_runtime.so",
+        "**/libglog.so",
+        "**/libreactnativejni.so",
+        "**/libjsinspector.so",
+        "**/libruntimeexecutor.so",
+    ]
+  }
+
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
   }
 
+  buildFeatures {
+    prefab true
+  }
+}
+
+task cleanCmakeCache() {
+  tasks.getByName("clean").dependsOn(cleanCmakeCache)
+  doFirst {
+    delete "${projectDir}/.cxx"
+  }
 }
 
 repositories {
@@ -77,7 +148,9 @@ dependencies {
   // For < 0.71, this will be from the local maven repo
   // For > 0.71, this will be replaced by `com.facebook.react:react-android:$version` by react gradle plugin
   //noinspection GradleDynamicVersion
-  implementation "com.facebook.react:react-native:+"
+  implementation "com.facebook.yoga:proguard-annotations:1.19.0"
+  compileOnly "com.facebook.fbjni:fbjni:0.3.0"
+  implementation "com.facebook.react:react-android"
 }
 
 if (isNewArchitectureEnabled()) {

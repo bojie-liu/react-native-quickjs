@@ -26,7 +26,7 @@ react {
 
     /* Bundling */
     //   A list containing the node command and its flags. Default is just 'node'.
-    // nodeExecutableAndArgs = ["node"]
+    nodeExecutableAndArgs = ["/Users/liubojie/.nvm/versions/node/v14.15.0/bin/node"]
     //
     //   The command to run when bundling. By default is 'bundle'
     // bundleCommand = "ram-bundle"
@@ -88,6 +88,7 @@ def reactNativeArchitectures() {
     return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
 }
 
+println('josh app ' + project.getProperties().get("react"))
 android {
     ndkVersion rootProject.ext.ndkVersion
 
