@@ -10,9 +10,9 @@ RCT_REMAP_METHOD(multiply,
                  withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 {
-    NSNumber *result = @(quickjs::multiply(a, b));
-
-    resolve(result);
+//    NSNumber *result = @(quickjs::multiply(a, b));
+//
+//    resolve(result);
 }
 
 // Don't compile this code when we build for the old architecture.

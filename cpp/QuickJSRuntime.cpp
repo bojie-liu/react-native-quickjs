@@ -115,6 +115,7 @@ void QuickJSRuntime::checkAndThrowException(JSContext *context) const {
 }
 
 void QuickJSRuntime::loadCodeCache(CodeCacheItem &codeCacheItem, const std::string &url) {
+#ifdef ANDROID
   std::string codeCachePath = "/data/data/com.facebook.react.uiapp/files/codecache/" + url;
   std::vector<uint8_t> buffer;
   if (folly::readFile(codeCachePath.c_str(), buffer)) {
@@ -124,15 +125,18 @@ void QuickJSRuntime::loadCodeCache(CodeCacheItem &codeCacheItem, const std::stri
     codeCacheItem.size = buffer.size();
     codeCacheItem.result = CodeCacheItem::INITIALIZED;
   }
+#endif
 }
 
 void QuickJSRuntime::updateCodeCache(CodeCacheItem &codeCacheItem, const std::string &url) {
+#ifdef ANDROID
   std::string codeCachePath = "/data/data/com.facebook.react.uiapp/files/codecache/" + url;
   std::vector<uint8_t> buffer(codeCacheItem.data.get(), codeCacheItem.data.get() + codeCacheItem
       .size);
   if (folly::writeFile(buffer, codeCachePath.c_str())) {
     codeCacheItem.result = CodeCacheItem::UPDATED;
   }
+#endif
 }
 
 //
