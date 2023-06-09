@@ -1,7 +1,11 @@
 package com.quickjsexample;
 
+import android.os.Bundle;
+
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
+import com.facebook.react.bridge.ReactMarker;
+import com.facebook.react.bridge.ReactMarkerConstants;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 
@@ -31,5 +35,19 @@ public class MainActivity extends ReactActivity {
         // If you opted-in for the New Architecture, we enable Concurrent React (i.e. React 18).
         DefaultNewArchitectureEntryPoint.getConcurrentReactEnabled() // concurrentRootEnabled
         );
+  }
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    TTIRecorder.mOnCreateTimestamp = System.currentTimeMillis();
+    super.onCreate(savedInstanceState);
+    ReactMarker.addListener((reactMarkerConstants, s, i) -> {
+      if (reactMarkerConstants == ReactMarkerConstants.GET_REACT_INSTANCE_MANAGER_START) {
+        // Start timestamp in react-native-v8
+      } else if (reactMarkerConstants == ReactMarkerConstants.CONTENT_APPEARED) {
+        TTIRecorder.mTTI = System.currentTimeMillis() - TTIRecorder.mOnCreateTimestamp;
+        TTIRecorder.printTTI();
+      }
+    });
   }
 }

@@ -1,6 +1,8 @@
 package com.quickjsexample;
 
 import android.app.Application;
+
+import com.facebook.hermes.reactexecutor.HermesExecutorFactory;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactNativeHost;
@@ -26,10 +28,9 @@ public class MainApplication extends Application implements ReactApplication {
 
         @Override
         protected List<ReactPackage> getPackages() {
-          @SuppressWarnings("UnnecessaryLocalVariable")
           List<ReactPackage> packages = new PackageList(this).getPackages();
           // Packages that cannot be autolinked yet can be added manually here, for example:
-          // packages.add(new MyReactNativePackage());
+          packages.add(new TTIPackage());
           return packages;
         }
 
@@ -51,7 +52,11 @@ public class MainApplication extends Application implements ReactApplication {
         @Nullable
         @Override
         protected JavaScriptExecutorFactory getJavaScriptExecutorFactory() {
-          return new QuickJSExecutorFactory();
+          if (Boolean.TRUE.equals(isHermesEnabled())) {
+            return new HermesExecutorFactory();
+          } else {
+            return new QuickJSExecutorFactory(getApplication().getCacheDir() + "/qjs");
+          }
         }
       };
 

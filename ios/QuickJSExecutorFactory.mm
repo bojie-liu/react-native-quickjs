@@ -32,8 +32,18 @@ std::unique_ptr<react::JSExecutor> QuickJSExecutorFactory::createJSExecutor(
       runtimeInstaller(runtime);
     }
   };
+  
+  NSError *error;
+  if (![[NSFileManager defaultManager] createDirectoryAtPath:[NSString stringWithUTF8String:codeCacheDir_.c_str()]
+                                 withIntermediateDirectories:YES
+                                                  attributes:nil
+                                                       error:&error])
+  {
+      NSLog(@"Create directory error: %@", error);
+      codeCacheDir_ = "";
+  }
   return folly::make_unique<react::JSIExecutor>(
-      createQuickJSRuntime(),
+      createQuickJSRuntime(codeCacheDir_),
       delegate,
       react::JSIExecutor::defaultTimeoutInvoker,
       std::move(installBindings));

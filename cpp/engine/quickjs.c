@@ -2243,6 +2243,15 @@ JS_BOOL JS_IsSameValue(JSContext *ctx, JSValueConst op1, JSValueConst op2)
     return js_same_value(ctx, op1, op2);
 }
 
+int JS_GetRefCount(JSValueConst v)
+{
+    if (JS_VALUE_HAS_REF_COUNT(v)) {
+        JSRefCountHeader *p = (JSRefCountHeader *)JS_VALUE_GET_PTR(v);
+        return p->ref_count;
+    }
+    return 0;
+}
+
 typedef enum JSFreeModuleEnum {
     JS_FREE_MODULE_ALL,
     JS_FREE_MODULE_NOT_RESOLVED,
@@ -34628,8 +34637,10 @@ static int JS_WriteFunctionTag(BCWriterState *s, JSValueConst obj)
     if (b->has_debug) {
         bc_put_atom(s, b->debug.filename);
         bc_put_leb128(s, b->debug.line_num);
+        bc_put_leb128(s, b->debug.source_len);
         bc_put_leb128(s, b->debug.pc2line_len);
         dbuf_put(&s->dbuf, b->debug.pc2line_buf, b->debug.pc2line_len);
+        dbuf_put(&s->dbuf, b->debug.source, b->debug.source_len);
     }
     
     for(i = 0; i < b->cpool_count; i++) {
@@ -35643,6 +35654,8 @@ static JSValue JS_ReadFunctionTag(BCReaderState *s)
             goto fail;
         if (bc_get_leb128_int(s, &b->debug.line_num))
             goto fail;
+        if (bc_get_leb128_int(s, &b->debug.source_len))
+            goto fail;
         if (bc_get_leb128_int(s, &b->debug.pc2line_len))
             goto fail;
         if (b->debug.pc2line_len) {
@@ -35650,6 +35663,13 @@ static JSValue JS_ReadFunctionTag(BCReaderState *s)
             if (!b->debug.pc2line_buf)
                 goto fail;
             if (bc_get_buf(s, b->debug.pc2line_buf, b->debug.pc2line_len))
+                goto fail;
+        }
+        if (b->debug.source_len) {
+            b->debug.source = js_mallocz(ctx, b->debug.source_len);
+            if (!b->debug.source)
+                goto fail;
+            if (bc_get_buf(s, b->debug.source, b->debug.source_len))
                 goto fail;
         }
 #ifdef DUMP_READ_OBJECT

@@ -4,6 +4,11 @@
 
 @implementation AppDelegate
 
++ (void)initialize {
+  extern NSTimeInterval onCreateTimestamp;
+  onCreateTimestamp = [[NSDate date] timeIntervalSince1970];
+}
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
   self.moduleName = @"QuickjsExample";

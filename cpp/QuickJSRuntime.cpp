@@ -1,6 +1,8 @@
 #include "QuickJSRuntime.h"
 
 #include <string.h>
+#include <regex>
+#include <iostream>
 
 #include <glog/logging.h>
 #include <set>
@@ -16,6 +18,10 @@
 
 #include <folly/FileUtil.h>
 #include <glog/logging.h>
+
+#if ENABLE_HASH_CHECK
+#include "city.h"
+#endif
 
 namespace qjs {
 
@@ -54,10 +60,11 @@ __maybe_unused void js_std_dump_error(JSContext *ctx) {
   JS_FreeValue(ctx, exception_val);
 }
 
-QuickJSRuntime::QuickJSRuntime() {
+QuickJSRuntime::QuickJSRuntime(const std::string &codeCacheDir) {
   runtime_ = JS_NewRuntime();
-  JS_SetMaxStackSize(runtime_, 1024 * 1024 * 1024);
+//  JS_SetMaxStackSize(runtime_, 10 * 1024 * 1024 * 1024);
   context_ = JS_NewContext(runtime_);
+  codeCacheDir_ = codeCacheDir;
   if (context_ == nullptr) {
     JS_FreeRuntime(runtime_);
   }
@@ -114,29 +121,60 @@ void QuickJSRuntime::checkAndThrowException(JSContext *context) const {
   }
 }
 
-void QuickJSRuntime::loadCodeCache(CodeCacheItem &codeCacheItem, const std::string &url) {
-#ifdef ANDROID
-  std::string codeCachePath = "/data/data/com.facebook.react.uiapp/files/codecache/" + url;
+std::string urlToCacheKey(const std::string &uri) {
+  std::regex path_regex(R"(([a-zA-Z]+:\/\/)?([^\/\?]+)([^?\n]+)?)");
+  std::smatch path_match;
+
+  if (std::regex_search(uri, path_match, path_regex)) {
+      return path_match[3];
+  }
+  return "codecache";
+}
+
+void QuickJSRuntime::loadCodeCache(CodeCacheItem &codeCacheItem, const std::string &url, const
+    char *source, size_t size) {
+  if (codeCacheDir_.empty()) {
+    return;
+  }
+
+  std::string cacheKey = urlToCacheKey(url);
+#if ENABLE_HASH_CHECK
+  int hash = base::cityhash::CityHash32(source, size);
+  cacheKey = std::to_string(hash);
+#endif
+
+  std::string codeCachePath = codeCacheDir_ + "/" + cacheKey;
   std::vector<uint8_t> buffer;
+  LOG(ERROR) << "read codecache " << url << " " << codeCachePath;
   if (folly::readFile(codeCachePath.c_str(), buffer)) {
     auto *data = new uint8_t[buffer.size()];
     memcpy(data, buffer.data(), buffer.size());
     codeCacheItem.data = std::unique_ptr<uint8_t>(data);
     codeCacheItem.size = buffer.size();
     codeCacheItem.result = CodeCacheItem::INITIALIZED;
+    LOG(ERROR) << "read finish " << buffer.size();
   }
-#endif
 }
 
-void QuickJSRuntime::updateCodeCache(CodeCacheItem &codeCacheItem, const std::string &url) {
-#ifdef ANDROID
-  std::string codeCachePath = "/data/data/com.facebook.react.uiapp/files/codecache/" + url;
+void QuickJSRuntime::updateCodeCache(CodeCacheItem &codeCacheItem, const std::string &url, const
+    char *source, size_t size) {
+  if (codeCacheDir_.empty()) {
+    return;
+  }
+
+  std::string cacheKey = urlToCacheKey(url);
+#if ENABLE_HASH_CHECK
+  int hash = base::cityhash::CityHash32(source, size);
+  cacheKey = std::to_string(hash);
+#endif
+
+  std::string codeCachePath = codeCacheDir_ + "/" + cacheKey;
   std::vector<uint8_t> buffer(codeCacheItem.data.get(), codeCacheItem.data.get() + codeCacheItem
       .size);
+  LOG(ERROR) << "updatecode " << url << " " << codeCachePath << " " << buffer.size();
   if (folly::writeFile(buffer, codeCachePath.c_str())) {
     codeCacheItem.result = CodeCacheItem::UPDATED;
   }
-#endif
 }
 
 //
@@ -161,7 +199,7 @@ jsi::Value QuickJSRuntime::evaluateJavaScript(
 
   if (enableCodeCache) {
     CodeCacheItem codeCacheItem;
-    loadCodeCache(codeCacheItem, sourceURL);
+    loadCodeCache(codeCacheItem, sourceURL, (const char *) buffer->data(), buffer->size());
     bool hasCodeCache = (codeCacheItem.result == CodeCacheItem::INITIALIZED);
     JSValue func, cachedFunc;
     if (hasCodeCache) {
@@ -205,7 +243,7 @@ jsi::Value QuickJSRuntime::evaluateJavaScript(
         codeCacheItem.data = std::unique_ptr<uint8_t>(buf);
         codeCacheItem.size = size;
         codeCacheItem.result = CodeCacheItem::REQUEST_UPDATE;
-        updateCodeCache(codeCacheItem, sourceURL);
+        updateCodeCache(codeCacheItem, sourceURL, (const char *) buffer->data(), buffer->size());
       } else {
         throw std::logic_error("no code cache");
       }
@@ -740,11 +778,25 @@ jsi::Array QuickJSRuntime::getPropertyNames(const jsi::Object &object) {
 }
 
 jsi::WeakObject QuickJSRuntime::createWeakObject(const jsi::Object &weakObject) {
-  throw std::logic_error("Not implemented");
+  const QuickJSPointerValue *pointer =
+      static_cast<const QuickJSPointerValue *>(getPointerValue(weakObject));
+  JSValue value = pointer->Get(context_);
+  ScopedJSValue scopedJsValue(context_, &value);
+
+  return make<jsi::WeakObject>(new QuickJSPointerValue(runtime_, context_, value));
 }
 
 jsi::Value QuickJSRuntime::lockWeakObject(jsi::WeakObject &weakObject) {
-  throw std::logic_error("Not implemented");
+  const QuickJSPointerValue *pointer =
+      static_cast<const QuickJSPointerValue *>(getPointerValue(weakObject));
+  JSValue value = pointer->Get(context_);
+  ScopedJSValue scopedJsValue(context_, &value);
+
+  if (JS_GetRefCount(value) >= 2) {
+    return JSIValueConverter::ToJSIValue(*this, value);
+  } else {
+    return jsi::Value::undefined();
+  }
 }
 
 jsi::Array QuickJSRuntime::createArray(size_t length) {

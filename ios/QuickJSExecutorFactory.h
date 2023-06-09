@@ -15,8 +15,8 @@ namespace qjs {
 class QuickJSExecutorFactory : public facebook::react::JSExecutorFactory {
 public:
   explicit QuickJSExecutorFactory(
-                                  facebook::react::JSIExecutor::RuntimeInstaller runtimeInstaller)
-  : runtimeInstaller_(std::move(runtimeInstaller)) {}
+                                  facebook::react::JSIExecutor::RuntimeInstaller runtimeInstaller, const std::string &codeCacheDir)
+  : runtimeInstaller_(std::move(runtimeInstaller)), codeCacheDir_(codeCacheDir) {}
   
   std::unique_ptr<facebook::react::JSExecutor> createJSExecutor(
                                                                 std::shared_ptr<facebook::react::ExecutorDelegate> delegate,
@@ -24,6 +24,7 @@ public:
   
 private:
   facebook::react::JSIExecutor::RuntimeInstaller runtimeInstaller_;
+  std::string codeCacheDir_;
 };
 }
 

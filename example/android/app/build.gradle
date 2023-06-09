@@ -88,7 +88,6 @@ def reactNativeArchitectures() {
     return value ? value.split(",") : ["armeabi-v7a", "x86", "x86_64", "arm64-v8a"]
 }
 
-println('josh app ' + project.getProperties().get("react"))
 android {
     ndkVersion rootProject.ext.ndkVersion
 

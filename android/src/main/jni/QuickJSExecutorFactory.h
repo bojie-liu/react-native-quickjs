@@ -11,9 +11,11 @@ class QuickJSExecutorFactory : public react::JSExecutorFactory {
  public:
   explicit QuickJSExecutorFactory(
       react::JSIExecutor::RuntimeInstaller runtimeInstaller,
-      const react::JSIScopedTimeoutInvoker &timeoutInvoker)
+      const react::JSIScopedTimeoutInvoker &timeoutInvoker,
+      const std::string &codeCacheDir)
       : runtimeInstaller_(runtimeInstaller),
-        timeoutInvoker_(timeoutInvoker) {}
+        timeoutInvoker_(timeoutInvoker),
+        codeCacheDir_(codeCacheDir) {}
 
   std::unique_ptr<react::JSExecutor> createJSExecutor(
       std::shared_ptr<react::ExecutorDelegate> delegate,
@@ -22,6 +24,7 @@ class QuickJSExecutorFactory : public react::JSExecutorFactory {
  private:
   react::JSIExecutor::RuntimeInstaller runtimeInstaller_;
   react::JSIScopedTimeoutInvoker timeoutInvoker_;
+  std::string codeCacheDir_;
 };
 
 class QuickJSExecutor : public react::JSIExecutor {

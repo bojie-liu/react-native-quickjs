@@ -29,15 +29,17 @@ struct CodeCacheItem {
 
 class QuickJSRuntime : public jsi::Runtime {
  public:
-  QuickJSRuntime();
+  QuickJSRuntime(const std::string &codeCacheDir);
   ~QuickJSRuntime();
 
   std::unordered_map<std::string, int64_t> getHeapInfo();
 
  private:
   void checkAndThrowException(JSContext *context) const;
-  void loadCodeCache(CodeCacheItem &codeCacheItem, const std::string& url);
-  void updateCodeCache(CodeCacheItem &codeCacheItem, const std::string& url);
+  void loadCodeCache(CodeCacheItem &codeCacheItem, const std::string& url, const char *source,
+                     size_t size);
+  void updateCodeCache(CodeCacheItem &codeCacheItem, const std::string& url, const char *source,
+                     size_t size);
 
 
   //
@@ -173,6 +175,7 @@ class QuickJSRuntime : public jsi::Runtime {
  private:
   JSRuntime *runtime_;
   JSContext *context_;
+  std::string codeCacheDir_;
 
   std::unique_ptr<QuickJSInstrumentation> instrumentation_;
 };

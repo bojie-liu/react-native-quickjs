@@ -6,21 +6,31 @@
  */
 package com.quickjs;
 
-import java.util.TimeZone;
+import java.io.File;
 
+import com.facebook.common.file.FileUtils;
 import com.facebook.react.bridge.JavaScriptExecutor;
 import com.facebook.react.bridge.JavaScriptExecutorFactory;
 
 public class QuickJSExecutorFactory implements JavaScriptExecutorFactory {
 
   private static final String TAG = "QuickJS";
+  private String mCodeCacheDir;
 
-  public QuickJSExecutorFactory() {
+  public QuickJSExecutorFactory(final String codeCacheDir) {
+    mCodeCacheDir = codeCacheDir;
   }
 
   @Override
   public JavaScriptExecutor create() {
-    return new QuickJSExecutor();
+    try {
+      FileUtils.mkdirs(new File(mCodeCacheDir));
+    } catch (Exception e) {
+      e.printStackTrace();
+      // Empty string to avoid using code cache.
+      mCodeCacheDir = "";
+    }
+    return new QuickJSExecutor(mCodeCacheDir);
   }
 
   @Override

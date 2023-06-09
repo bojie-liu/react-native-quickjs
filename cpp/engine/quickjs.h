@@ -362,6 +362,8 @@ JSValue JS_GetClassProtoOrNull(JSContext *ctx, JSClassID class_id);
 JS_BOOL JS_IsStrictEqual(JSContext *ctx, JSValue op1, JSValue op2);
 JS_BOOL JS_IsSameValue(JSContext *ctx, JSValueConst op1, JSValueConst op2);
 
+int JS_GetRefCount(JSValueConst v);
+
 /* the following functions are used to select the intrinsic object to
    save memory */
 JSContext *JS_NewContextRaw(JSRuntime *rt);

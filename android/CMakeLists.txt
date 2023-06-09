@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(react-native-quickjs)
-
 set (CMAKE_VERBOSE_MAKEFILE ON)
 set (CMAKE_CXX_STANDARD 14)
 
@@ -17,6 +16,7 @@ add_compile_options(
         -Wno-unused-variable
         -DCONFIG_CC="gcc"
         -DLOG_TAG=\"ReactNative\"
+        -DENABLE_HASH_CHECK=${ENABLE_HASH_CHECK}
         -DCONFIG_BIGNUM)
 
 file(GLOB quickjs_jni_SRC CONFIGURE_DEPENDS ./src/main/jni/*.cpp)
@@ -87,3 +87,6 @@ target_link_libraries(
   ReactAndroid::runtimeexecutor
   reactnative_internal_static
 )
+
+# target_compile_options(${PACKAGE_NAME} PUBLIC -fsanitize=address -fno-omit-frame-pointer)
+# set_target_properties(${PACKAGE_NAME} PROPERTIES LINK_FLAGS -fsanitize=address)

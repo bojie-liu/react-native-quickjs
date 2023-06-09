@@ -28,11 +28,12 @@ class QuickJSExecutorHolder
       "Lcom/quickjs/QuickJSExecutor;";
 
   static jni::local_ref<jhybriddata> initHybrid(
-      jni::alias_ref<jclass>) {
+      jni::alias_ref<jclass>, const std::string &codeCacheDir) {
     react::JReactMarker::setLogPerfMarkerIfNeeded();
     return makeCxxInstance(folly::make_unique<QuickJSExecutorFactory>(
         installBindings,
-        react::JSIExecutor::defaultTimeoutInvoker));
+        react::JSIExecutor::defaultTimeoutInvoker,
+        codeCacheDir));
   }
 
   static void registerNatives() {

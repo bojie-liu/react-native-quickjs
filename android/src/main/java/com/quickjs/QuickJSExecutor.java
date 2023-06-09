@@ -16,8 +16,8 @@ public class QuickJSExecutor extends JavaScriptExecutor {
     SoLoader.loadLibrary("quickjsexecutor");
   }
 
-  QuickJSExecutor() {
-    super(initHybrid());
+  QuickJSExecutor(final String codeCacheDir) {
+    super(initHybrid(codeCacheDir));
   }
 
   @Override
@@ -25,5 +25,5 @@ public class QuickJSExecutor extends JavaScriptExecutor {
     return "QuickJSExecutor";
   }
 
-  private static native HybridData initHybrid();
+  private static native HybridData initHybrid(final String codeCacheDir);
 }

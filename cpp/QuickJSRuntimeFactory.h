@@ -8,6 +8,6 @@ namespace jsi = facebook::jsi;
 
 namespace qjs {
 
-std::unique_ptr<jsi::Runtime> createQuickJSRuntime();
+std::unique_ptr<jsi::Runtime> createQuickJSRuntime(const std::string &codeCacheDir);
 
 } // namespace qjs
