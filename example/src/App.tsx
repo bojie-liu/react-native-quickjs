@@ -1,30 +1,19 @@
-import * as React from 'react';
+/**
+ * Sample React Native App
+ * https://github.com/facebook/react-native
+ *
+ * @format
+ * @flow
+ */
 
-import { StyleSheet, View, Text } from 'react-native';
+import React from 'react';
+import { SafeAreaView } from 'react-native';
+import SearchableFlatList from './SearchableList';
 
-export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
+const App = () => (
+  <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+    <SearchableFlatList />
+  </SafeAreaView>
+);
 
-  React.useEffect(() => {
-  }, []);
-
-  return (
-    <View style={styles.container}>
-      <Text>Result: {result}</Text>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'white',
-  },
-  box: {
-    width: 60,
-    height: 60,
-    marginVertical: 20,
-  },
-});
+export default App;
