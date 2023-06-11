@@ -2644,6 +2644,11 @@ invariant@*, invariant@^2.2.4:
   dependencies:
     loose-envify "^1.0.0"
 
+ios-deploy@^1.12.2:
+  version "1.12.2"
+  resolved "https://npm.corp.kuaishou.com/ios-deploy/-/ios-deploy-1.12.2.tgz#8f78a6868614f343eb1d0fc799ada925981fc5c5"
+  integrity sha512-DAIjevWXqcg7I9zD0WFf6KXKSP/Ybl+7zoHT1Sck7V3strmfsyCqWiudKUUzwBWRo7y28Jnfbz7fSc99CgV4FA==
+
 ip@^1.1.5:
   version "1.1.8"
   resolved "https://npm.corp.kuaishou.com/ip/-/ip-1.1.8.tgz#ae05948f6b075435ed3307acce04629da8cdbf48"

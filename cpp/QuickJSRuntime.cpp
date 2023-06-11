@@ -122,13 +122,24 @@ void QuickJSRuntime::checkAndThrowException(JSContext *context) const {
 }
 
 std::string urlToCacheKey(const std::string &uri) {
-  std::regex path_regex(R"(([a-zA-Z]+:\/\/)?([^\/\?]+)([^?\n]+)?)");
+  std::regex dev_path_regex(R"(([a-zA-Z]+:\/\/)?([^\/\?]+)([^?\n]+)?)");
+  std::regex iOS_path_regex(R"([^\/]*$)");
   std::smatch path_match;
 
-  if (std::regex_search(uri, path_match, path_regex)) {
-      return path_match[3];
+  // Dev mode
+  if (uri.find("http") != std::string::npos && std::regex_search(uri, path_match, dev_path_regex)) {
+    return path_match[3];
+  }
+
+  // Release mode
+#ifdef __ANDROID__
+  return uri;
+#elif defined(__APPLE__)
+  if (std::regex_search(uri, path_match, iOS_path_regex) && !path_match.empty()) {
+    return path_match[0];
   }
   return "codecache";
+#endif
 }
 
 void QuickJSRuntime::loadCodeCache(CodeCacheItem &codeCacheItem, const std::string &url, const

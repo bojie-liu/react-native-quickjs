@@ -44,7 +44,7 @@ RCT_REMAP_METHOD(componentDidMount,
 
 - (void)printTTI {
   if (componentDidMount != 0 && tti != 0) {
-    NSLog(@"TTI: %f ComponentDidMount: %f", tti * 1000, componentDidMount * 1000);
+    printf("TTI: %f ComponentDidMount: %f", tti * 1000, componentDidMount * 1000);
   }
 }
 

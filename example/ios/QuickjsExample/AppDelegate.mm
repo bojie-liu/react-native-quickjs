@@ -1,12 +1,45 @@
 #import "AppDelegate.h"
 
 #import <React/RCTBundleURLProvider.h>
+#import <React/RCTCxxBridgeDelegate.h>
+#import <React/RCTJSIExecutorRuntimeInstaller.h>
+#import <ReactCommon/RCTTurboModuleManager.h>
+
+#ifndef RCT_USE_HERMES
+#if __has_include(<reacthermes/HermesExecutorFactory.h>)
+#define RCT_USE_HERMES 1
+#else
+#define RCT_USE_HERMES 0
+#endif
+#endif
+
+#if RCT_USE_HERMES
+#import <reacthermes/HermesExecutorFactory.h>
+//#else
+//#import <React/JSCExecutorFactory.h>
+#endif
+#import <QuickJSExecutorFactory.h>
+
+@interface AppDelegate () <RCTCxxBridgeDelegate>
+@end
 
 @implementation AppDelegate
 
 + (void)initialize {
   extern NSTimeInterval onCreateTimestamp;
   onCreateTimestamp = [[NSDate date] timeIntervalSince1970];
+}
+
+- (std::unique_ptr<facebook::react::JSExecutorFactory>)jsExecutorFactoryForBridge:(RCTBridge *)bridge
+{
+  auto installBindings = facebook::react::RCTJSIExecutorRuntimeInstaller(nullptr);
+#if RCT_USE_HERMES
+  return std::make_unique<facebook::react::HermesExecutorFactory>(installBindings);
+#else
+//  return std::make_unique<facebook::react::JSCExecutorFactory>(installBindings);
+  auto cacheDir = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES).firstObject UTF8String];
+  return std::make_unique<qjs::QuickJSExecutorFactory>(installBindings, "");
+#endif
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions

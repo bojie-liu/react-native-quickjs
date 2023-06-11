@@ -56,6 +56,7 @@ public class MainApplication extends Application implements ReactApplication {
             return new HermesExecutorFactory();
           } else {
             return new QuickJSExecutorFactory(getApplication().getCacheDir() + "/qjs");
+//            return new QuickJSExecutorFactory("");  // Disable code cache
           }
         }
       };
