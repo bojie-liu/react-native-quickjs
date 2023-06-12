@@ -162,7 +162,7 @@ index 029aa44..2f579c3 100644
     ```
 
 ## Performance(TBD)
-1. Example performance
+1. [Example performance](./docs/DemoPerformance.md)
 2. Real world bundle performance
 
 ## Why would I choose QuickJS for React Native(TBD)
@@ -173,7 +173,7 @@ Pros
 2. Easy to customize
 
 Cons
-1. No inspector (may be some project have made it worked in the community)
+1. No inspector (may be some project has made it worked in the community)
 
 ## Contributing
 
