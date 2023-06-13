@@ -1,6 +1,6 @@
 # react-native-quickjs
 
-quickjs engine for RN
+An lightweight javascript engine for RN. 
 
 ## Installation
 **Only tested for React Native >= 0.71.8. Please create an issue if it does not work for other version. Will fix it ASAP.**
@@ -161,19 +161,26 @@ index 029aa44..2f579c3 100644
     npx react-native run-ios --mode Release
     ```
 
-## Performance(TBD)
+## Performance
+
 1. [Example performance](./docs/DemoPerformance.md)
 2. Real world bundle performance
+   1. We tested QuickJS/V8/JSC with an online bundle size of 1.43M.
+   2. On Android, we enabled code cache for both QuickJS and V8. For TTI, QuickJS is 5-20% slower than V8. For PSS memory, QuickJS is 40-(-5)% lower than V8.
+   3. On iOS, TTI using QuickJS is 15% slower than JSC without code cache. With code cache, QuickJS is 15% faster than JSC and 50% lower than JSC in footprint memory usage.
 
-## Why would I choose QuickJS for React Native(TBD)
-Comparable performance
+## ESx Compatibility
 
-Pros
-1. Light-weight
-2. Easy to customize
+As listed on official QuickJS [website](https://bellard.org/quickjs/). QuickJS passed 82% of ECMA-262 tests. Meanwhile V8 passed 86% and JSC passed 85% in 2022. If internationalization tests which accounts for nearly 3% are excluded, QuickJS is fairly close to V8 and JSC. You can checkout [https://test262.report/](https://test262.report/) for failed cases just in case.
 
-Cons
-1. No inspector (may be some project has made it worked in the community)
+## Why would I choose QuickJS for React Native
+
+IMHO:
+
+1. On Android, QuickJS is slower than V8 in most of my tests. Although it has advantages in memory and binary size which is important on some resource-limited devices. Also QuickJS is benefit from its startup time for some simple bundles.
+2. On iOS, QuickJS simply better than JSC with code cache and worst than JSC without code cache.
+3. QuickJS is easy to customize when it compared with V8 or Hermes. Like adding some high performance builtin functions or customized classes. It depends on your business.
+4. Currently QuickJS have no inspector. But it seems some open source projects have made it worked. Anyway it needs extra works to support inspector in the future.
 
 ## Contributing
 
