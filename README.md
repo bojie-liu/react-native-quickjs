@@ -3,15 +3,19 @@
 An lightweight javascript engine for RN. 
 
 ## Installation
+
 **Only tested for React Native >= 0.71.8. Please create an issue if it does not work for other version. Will fix it ASAP.**
 
 1. Install dependency
+
 ```sh
 yarn add react-native-quickjs
 ```
 
 ##### For Android
+
 2. Override "getJavaScriptExecutorFactory" to use QuickJS as JS runtime
+
 ``` diff
 diff --git a/android/app/src/main/java/com/awesomeproject/MainApplication.java b/android/app/src/main/java/com/awesomeproject/MainApplication.java
 index 105e48c..b309fea 100644
@@ -52,6 +56,7 @@ index 105e48c..b309fea 100644
 ```
 
 3. Disable Hermes and its bundling procedure
+
 ``` diff
 --- a/android/gradle.properties
 +++ b/android/gradle.properties
@@ -64,6 +69,7 @@ index 105e48c..b309fea 100644
 ```
 
 4. (Optional) Exclude unused libraries to reduce APK size
+
 ``` diff
 --- a/android/app/build.gradle
 +++ b/android/app/build.gradle
@@ -91,11 +97,15 @@ index 105e48c..b309fea 100644
     ```
 
 ##### For iOS
+
 2. Disable Hermes and its bundling procedure
+
 ``` sh
 USE_HERMES=0 pod install
 ```
+
 3. Use "QuickJSExecutorFactory" in your application
+
 ``` diff
 diff --git a/ios/AwesomeProject/AppDelegate.mm b/ios/AwesomeProject/AppDelegate.mm
 index 029aa44..2f579c3 100644
