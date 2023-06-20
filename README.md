@@ -1,6 +1,6 @@
 # react-native-quickjs
 
-An lightweight javascript engine for RN. 
+A lightweight javascript engine for RN. 
 
 ## Installation
 
