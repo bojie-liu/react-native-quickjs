@@ -2,7 +2,15 @@
 
 An lightweight javascript engine for RN. 
 
-## Installation
+## Run the example
+
+```sh
+cd example && yarn
+yarn android
+yarn ios
+```
+
+## Run with existing project
 
 **Only tested for React Native >= 0.71.8. Please create an issue if it does not work for other version. Will fix it ASAP.**
 
