@@ -62,7 +62,7 @@ __maybe_unused void js_std_dump_error(JSContext *ctx) {
 
 QuickJSRuntime::QuickJSRuntime(const std::string &codeCacheDir) {
   runtime_ = JS_NewRuntime();
-//  JS_SetMaxStackSize(runtime_, 10 * 1024 * 1024 * 1024);
+  JS_SetMaxStackSize(runtime_, 1024 * 1024 * 1024);
   context_ = JS_NewContext(runtime_);
   codeCacheDir_ = codeCacheDir;
   if (context_ == nullptr) {
